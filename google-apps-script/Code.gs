@@ -2,22 +2,22 @@
  * Webhook de Google Apps Script para recibir solicitudes de la landing
  * Mejoravit y guardarlas como filas en Google Sheets.
  *
- * CÓMO CONFIGURARLO:
- * 1. Crea una hoja de Google Sheets nueva.
- * 2. En la hoja, ve a Extensiones → Apps Script.
- * 3. Borra el contenido y pega este archivo completo.
+ * CÓMO CONFIGURARLO (3 minutos):
+ * 1. Abre la hoja "Solicitudes Mejoravit Chihuahua" en Google Sheets.
+ * 2. Ve a Extensiones → Apps Script.
+ * 3. Borra el contenido y pega este archivo completo. Guarda (Ctrl+S).
  * 4. Haz clic en "Implementar" → "Nueva implementación".
  * 5. Tipo: "Aplicación web".
  *    - Ejecutar como: Tú (tu cuenta).
  *    - Quién tiene acceso: "Cualquier usuario" (necesario para que el
  *      servidor de la landing pueda hacer POST).
- * 6. Copia la URL de la aplicación web (termina en /exec) y ponla en la
- *    variable de entorno GOOGLE_SCRIPT_WEBHOOK_URL en Vercel.
+ * 6. Autoriza el script cuando lo pida, copia la URL de la aplicación web
+ *    (termina en /exec) y ponla en la variable de entorno
+ *    GOOGLE_SCRIPT_WEBHOOK_URL en Vercel.
  *
- * La primera fila (encabezados) se crea automáticamente si la hoja está vacía.
+ * El script escribe en la primera pestaña de la hoja. Si la fila de
+ * encabezados no existe, se crea automáticamente.
  */
-
-var SHEET_NAME = "Solicitudes";
 
 var HEADERS = [
   "Fecha y hora",
@@ -42,11 +42,7 @@ function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
 
-    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = spreadsheet.getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      sheet = spreadsheet.insertSheet(SHEET_NAME);
-    }
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(HEADERS);
