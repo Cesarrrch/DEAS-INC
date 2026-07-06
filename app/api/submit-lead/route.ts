@@ -60,7 +60,20 @@ export async function POST(request: Request) {
       // Google Apps Script responde con redirect 302; fetch lo sigue por defecto.
     });
 
-    if (!response.ok) {
+    // Apps Script siempre responde 200 aunque falle internamente, y una
+    // implementación mal configurada (acceso restringido) devuelve una página
+    // HTML de login también con 200. Exigimos el JSON {"ok":true} real.
+    let webhookOk = false;
+    if (response.ok) {
+      try {
+        const result = (await response.json()) as { ok?: boolean };
+        webhookOk = result.ok === true;
+      } catch {
+        webhookOk = false;
+      }
+    }
+
+    if (!webhookOk) {
       return NextResponse.json(GENERIC_ERROR, { status: 502 });
     }
 
